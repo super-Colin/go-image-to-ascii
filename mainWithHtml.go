@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"image/color"
-	"image/png"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"os"
 )
@@ -11,35 +14,57 @@ import (
 func main() {
 	debugSwitch := false
 
-	var maxPixelWidth int = 60
+	ansiOrHtml := "ansi"
+	// ansiOrHtml := "html"
 	colorDistance := 80
-	doubleWide := false
+	doubleWide := true
+	var maxPixelWidth int = 60
 
-	pngImage, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	levels := []string{" ", "░", "▒", "▓", "█"}
+	// levels := []string{"▁", "░", "▒", "▓", "█"}
+	// levels := []string{" ", ".", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "▉", "█"}
+
+	if doubleWide {
+		maxPixelWidth /= 2
+	}
+
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer pngImage.Close()
+	defer imagePointer.Close()
 
-	decodedImage, err := png.Decode(pngImage)
+	// decodedImage, fileType, err := image.Decode(imagePointer)
+	decodedImage, _, err := image.Decode(imagePointer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// ANSI color codes:
-	colorReset := "\033[0m"
+	ansiColorReset := "\033[0m"
 
-	colorRed := "\033[31m"
-	// colorBrightRed := "\033[91m"
-	colorGreen := "\033[32m"
-	colorYellow := "\033[33m"
-	colorBlue := "\033[34m"
-	colorPurple := "\033[35m"
-	colorCyan := "\033[36m"
-	colorWhite := "\033[37m"
-	colorBlack := "\033[30m"
+	ansiColorRed := "\033[31m"
+	// ansiColorBrightRed := "\033[91m"
+	ansiColorGreen := "\033[32m"
+	ansiColorYellow := "\033[33m"
+	ansiColorBlue := "\033[34m"
+	ansiColorPurple := "\033[35m"
+	ansiColorCyan := "\033[36m"
+	ansiColorWhite := "\033[37m"
+	ansiColorBlack := "\033[30m"
 
-	levels := []string{" ", ".", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "▉", "█"}
+	// html color codes:
+	// htmlColorReset := "<span style=\"color: #000000;\">"
+	htmlColorReset := "</span>"
+	htmlColorRed := "</span><span style=\"color: #ff0000;\">"
+	htmlColorGreen := "</span><span style=\"color: #00ff00;\">"
+	htmlColorYellow := "</span><span style=\"color: #ffff00;\">"
+	htmlColorBlue := "</span><span style=\"color: #0000ff;\">"
+	htmlColorPurple := "</span><span style=\"color: #ff00ff;\">"
+	htmlColorCyan := "</span><span style=\"color: #00ffff;\">"
+	htmlColorWhite := "</span><span style=\"color: #ffffff;\">"
+	htmlColorBlack := "</span><span style=\"color: #000000;\">"
 
 	var valPerLevel int = 255 / len(levels)
 	maxLevel := len(levels) - 1
@@ -62,46 +87,78 @@ func main() {
 			rgbMax := maxUint8(red, green, blue)
 			rgbMin := minUint8(red, green, blue)
 			if debugSwitch {
-				fmt.Println(colorWhite, "Max, Min // R G B ", rgbMax, rgbMin, "//", colorRed, red, colorGreen, green, colorBlue, blue)
+				fmt.Println(ansiColorWhite, "Max, Min // R G B ", rgbMax, rgbMin, "//", ansiColorRed, red, ansiColorGreen, green, ansiColorBlue, blue)
 			}
 			switch {
 
 			// no color is very bright
 			case lastColorUsed != "black" && rgbMax < 80:
-				fmt.Print(colorBlack)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorBlack)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorBlack)
+				}
 				lastColorUsed = "black"
 
 			// all colors are bright
 			case lastColorUsed != "white" && rgbMin > 200:
-				fmt.Print(colorWhite)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorWhite)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorWhite)
+				}
 				lastColorUsed = "white"
 
 			// red and blue are close, green isn't
 			case lastColorUsed != "purple" && rgbMin == green && rCloseToB && !rCloseToG:
-				fmt.Print(colorPurple)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorPurple)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorPurple)
+				}
 				lastColorUsed = "purple"
 
 			// red and green are close, blue isn't
 			case lastColorUsed != "yellow" && rgbMin == blue && rCloseToG && !rCloseToB:
-				fmt.Print(colorYellow)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorYellow)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorYellow)
+				}
 				lastColorUsed = "yellow"
 
 			// green and blue are close, red isn't
 			case lastColorUsed != "cyan" && rgbMin == red && gCloseToB && !rCloseToG:
-				fmt.Print(colorCyan)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorCyan)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorCyan)
+				}
 				lastColorUsed = "cyan"
 
 			// red is dominant
 			case lastColorUsed != "red" && rgbMax == red && !rCloseToG && !rCloseToB:
-				fmt.Print(colorRed)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorRed)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorRed)
+				}
 				lastColorUsed = "red"
 			// green is dominant
 			case lastColorUsed != "green" && rgbMax == green && !rCloseToG && !gCloseToB:
-				fmt.Print(colorGreen)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorGreen)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorGreen)
+				}
 				lastColorUsed = "green"
 			// blue is dominant
 			case lastColorUsed != "blue" && rgbMax == blue && !gCloseToB && !rCloseToB:
-				fmt.Print(colorBlue)
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorBlue)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorBlue)
+				}
 				lastColorUsed = "blue"
 			}
 
@@ -119,9 +176,19 @@ func main() {
 			}
 			fmt.Print(levels[level]) // print the ascii "pixel"
 		}
-		fmt.Print("\n")
+
+		if ansiOrHtml == "ansi" {
+			fmt.Print("\n")
+		} else if ansiOrHtml == "html" {
+			// fmt.Print("</span><br />")
+			fmt.Print("<br />")
+		}
 	}
-	fmt.Print(colorReset)
+	if ansiOrHtml == "ansi" {
+		fmt.Print(ansiColorReset)
+	} else if ansiOrHtml == "html" {
+		fmt.Print(htmlColorReset)
+	}
 
 }
 func withinRangeOf(a, b uint8, distance int) bool {

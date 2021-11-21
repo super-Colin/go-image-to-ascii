@@ -9,8 +9,6 @@ import (
 	_ "image/png"
 	"log"
 	"os"
-	"pickcolor"
-	// "pickcolor/pickcolor"
 )
 
 func main() {
@@ -85,7 +83,6 @@ func main() {
 			red := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).R
 			green := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).G
 			blue := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).B
-			alpha := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).A
 			rCloseToB := withinRangeOf(red, blue, colorDistance)
 			rCloseToG := withinRangeOf(red, green, colorDistance)
 			gCloseToB := withinRangeOf(green, blue, colorDistance)
@@ -98,11 +95,80 @@ func main() {
 			level := int(colorStrength.Y) / valPerLevel
 			// level := int(colorStrength) / valPerLevel
 
-			pickcolor.PickColor(red, green, blue, alpha)
-			// PickColor(red, green, blue, alpha)
-
 			if debugSwitch {
 				fmt.Println(ansiColorWhite, "Max, Min // R G B ", rgbMax, rgbMin, "//", ansiColorRed, red, ansiColorGreen, green, ansiColorBlue, blue)
+			}
+			switch {
+
+			// no color is very bright
+			case lastColorUsed != "black" && rgbMax < 80:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorBlack)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorBlack)
+				}
+				lastColorUsed = "black"
+
+			// all colors are bright
+			case lastColorUsed != "white" && rgbMin > 200:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorWhite)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorWhite)
+				}
+				lastColorUsed = "white"
+
+			// red and blue are close, green isn't
+			case lastColorUsed != "purple" && rgbMin == green && rCloseToB && !rCloseToG:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorPurple)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorPurple)
+				}
+				lastColorUsed = "purple"
+
+			// red and green are close, blue isn't
+			case lastColorUsed != "yellow" && rgbMin == blue && rCloseToG && !rCloseToB:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorYellow)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorYellow)
+				}
+				lastColorUsed = "yellow"
+
+			// green and blue are close, red isn't
+			case lastColorUsed != "cyan" && rgbMin == red && gCloseToB && !rCloseToG:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorCyan)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorCyan)
+				}
+				lastColorUsed = "cyan"
+
+			// red is dominant
+			case lastColorUsed != "red" && rgbMax == red && !rCloseToG && !rCloseToB:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorRed)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorRed)
+				}
+				lastColorUsed = "red"
+			// green is dominant
+			case lastColorUsed != "green" && rgbMax == green && !rCloseToG && !gCloseToB:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorGreen)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorGreen)
+				}
+				lastColorUsed = "green"
+			// blue is dominant
+			case lastColorUsed != "blue" && rgbMax == blue && !gCloseToB && !rCloseToB:
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorBlue)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorBlue)
+				}
+				lastColorUsed = "blue"
 			}
 
 			if debugSwitch {
