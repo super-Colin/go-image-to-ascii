@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-func main() {
+func m2ain() {
 	debugSwitch := false
 
 	ansiOrHtml := "ansi"

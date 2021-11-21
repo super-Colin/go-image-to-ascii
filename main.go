@@ -20,7 +20,7 @@ func main() {
 	// ansiOrHtml := "html"
 	colorDistance := 60
 	doubleWide := true
-	var maxPixelWidth int = 100
+	var maxPixelWidth int = 60
 
 	// levels := []string{"_", "a", "b", "c", "d", "e", "f"}
 	levels := []string{" ", "░", "▒", "▓", "█"}
@@ -86,26 +86,53 @@ func main() {
 			green := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).G
 			blue := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).B
 			alpha := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).A
-			rCloseToB := withinRangeOf(red, blue, colorDistance)
-			rCloseToG := withinRangeOf(red, green, colorDistance)
-			gCloseToB := withinRangeOf(green, blue, colorDistance)
-
-			rgbMax := maxUint8(red, green, blue)
-			rgbMin := minUint8(red, green, blue)
 
 			colorStrength := color.GrayModel.Convert(decodedImage.At(x, y)).(color.Gray)
 			// colorStrength := rgbMin
 			level := int(colorStrength.Y) / valPerLevel
 			// level := int(colorStrength) / valPerLevel
 
-			pickcolor.PickColor(red, green, blue, alpha)
-			// PickColor(red, green, blue, alpha)
-
-			if debugSwitch {
-				fmt.Println(ansiColorWhite, "Max, Min // R G B ", rgbMax, rgbMin, "//", ansiColorRed, red, ansiColorGreen, green, ansiColorBlue, blue)
+			colorToUse := pickcolor.PickColor(red, green, blue, alpha, colorDistance, colorDistance, lastColorUsed)
+			htmlColorCode := ""
+			ansiColorCode := ""
+			// fmt.Println(colorToUse)
+			// set color code variables
+			switch {
+			case colorToUse == "black":
+				ansiColorCode = ansiColorBlack
+				htmlColorCode = htmlColorBlack
+			case colorToUse == "white":
+				ansiColorCode = ansiColorWhite
+				htmlColorCode = htmlColorWhite
+			case colorToUse == "purple":
+				ansiColorCode = ansiColorPurple
+				htmlColorCode = htmlColorPurple
+			case colorToUse == "yellow":
+				ansiColorCode = ansiColorYellow
+				htmlColorCode = htmlColorYellow
+			case colorToUse == "cyan":
+				ansiColorCode = ansiColorCyan
+				htmlColorCode = htmlColorCyan
+			case colorToUse == "red":
+				ansiColorCode = ansiColorRed
+				htmlColorCode = htmlColorRed
+			case colorToUse == "green":
+				ansiColorCode = ansiColorGreen
+				htmlColorCode = htmlColorGreen
+			case colorToUse == "blue":
+				ansiColorCode = ansiColorBlue
+				htmlColorCode = htmlColorBlue
 			}
+			// set the color of the pixel
+			if ansiOrHtml == "ansi" {
+				fmt.Print(ansiColorCode)
+			} else if ansiOrHtml == "html" {
+				fmt.Print(htmlColorCode)
+			}
+			lastColorUsed = colorToUse
 
 			if debugSwitch {
+				fmt.Println(ansiColorWhite, "Max, Min // R G B ", "//", ansiColorRed, red, ansiColorGreen, green, ansiColorBlue, blue)
 				fmt.Println("Chose Color: ", lastColorUsed)
 				fmt.Println("")
 			}
@@ -114,19 +141,21 @@ func main() {
 			if level > maxLevel {
 				level = maxLevel
 			}
-			if doubleWide { // print it an extra time
+			// PRINT THE PIXEL
+			fmt.Print(levels[level])
+			if doubleWide { // print an extra time if dobule wide
 				fmt.Print(levels[level])
 			}
-			fmt.Print(levels[level]) // print the ascii "pixel"
 		}
 
+		// print a newline after each row
 		if ansiOrHtml == "ansi" {
 			fmt.Print("\n")
 		} else if ansiOrHtml == "html" {
-			// fmt.Print("</span><br />")
 			fmt.Print("<br />")
 		}
 	}
+	// reset the color
 	if ansiOrHtml == "ansi" {
 		fmt.Print(ansiColorReset)
 	} else if ansiOrHtml == "html" {
@@ -134,25 +163,26 @@ func main() {
 	}
 
 }
-func withinRangeOf(a, b uint8, distance int) bool {
-	intA, intB := int(a), int(b)
-	return intA > intB-distance && intA < intB+distance
-}
-func minUint8(values ...uint8) uint8 {
-	min := uint8(255)
-	for _, v := range values {
-		if v < min {
-			min = v
-		}
-	}
-	return min
-}
-func maxUint8(values ...uint8) uint8 {
-	max := uint8(0)
-	for _, v := range values {
-		if v > max {
-			max = v
-		}
-	}
-	return max
-}
+
+// func withinRangeOf(a, b uint8, distance int) bool {
+// 	intA, intB := int(a), int(b)
+// 	return intA > intB-distance && intA < intB+distance
+// }
+// func minUint8(values ...uint8) uint8 {
+// 	min := uint8(255)
+// 	for _, v := range values {
+// 		if v < min {
+// 			min = v
+// 		}
+// 	}
+// 	return min
+// }
+// func maxUint8(values ...uint8) uint8 {
+// 	max := uint8(0)
+// 	for _, v := range values {
+// 		if v > max {
+// 			max = v
+// 		}
+// 	}
+// 	return max
+// }
