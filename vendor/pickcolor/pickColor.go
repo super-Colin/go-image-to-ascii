@@ -1,57 +1,72 @@
 package pickcolor
 
+import (
+	"math"
+)
+
 // "image/color"
 
 // func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorCloseToRequirement int, lastColorUsed string) string {
-func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorCloseToRequirement int, lastColorUsed string) string {
-
+func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorCloseToRequirement int) string {
 	colorToReturn := ""
+
 	rCloseToB := withinRangeOf(red, blue, colorCloseToRequirement)
 	rCloseToG := withinRangeOf(red, green, colorCloseToRequirement)
 	gCloseToB := withinRangeOf(green, blue, colorCloseToRequirement)
+	// rFromB := distanceFrom(red, blue)
+	// rFromG := distanceFrom(red, green)
+	// gFromB := distanceFrom(green, blue)
+	// rIsLargest := red > maxUint8(green, blue)
+	// gIsLargest := green > maxUint8(red, blue)
+	// bIsLargest := blue > maxUint8(red, green)
 
 	rgbMax := maxUint8(red, green, blue)
 	rgbMin := minUint8(red, green, blue)
 
-	// -- debug line --
-	// fmt.Println(ansiColorWhite, "Max, Min // R G B ", rgbMax, rgbMin, "//", ansiColorRed, red, ansiColorGreen, green, ansiColorBlue, blue)
+	// CHECK FOR OVERALL BRIGHTNESS / DARKNESS
 
 	switch {
+	// CHECK FOR OVERALL BRIGHTNESS / DARKNESS
 	// no color is very bright
-	case lastColorUsed != "black" && rgbMax < 80:
+	case rgbMax < 60:
 		colorToReturn = "black"
+		// fmt.Println("chose color black")
 
 	// all colors are bright
-	case lastColorUsed != "white" && rgbMin > 200:
+	case rgbMin > 220:
 		colorToReturn = "white"
+		// fmt.Println("chose color white")
 
 	// red and blue are close, green isn't
-	case lastColorUsed != "purple" && rgbMin == green && rCloseToB && !rCloseToG:
+	case rgbMin == green && rCloseToB && !rCloseToG:
 		colorToReturn = "purple"
+		// fmt.Println("chose color purple")
 
 	// red and green are close, blue isn't
-	case lastColorUsed != "yellow" && rgbMin == blue && rCloseToG && !rCloseToB:
+	case rgbMin == blue && rCloseToG && !rCloseToB:
 		colorToReturn = "yellow"
+		// fmt.Println("chose color yellow")
 
 	// green and blue are close, red isn't
-	case lastColorUsed != "cyan" && rgbMin == red && gCloseToB && !rCloseToG:
+	case rgbMin == red && gCloseToB && !rCloseToG:
 		colorToReturn = "cyan"
+		// fmt.Println("chose color cyan")
 
 	// red is dominant
-	case lastColorUsed != "red" && rgbMax == red && !rCloseToG && !rCloseToB:
+	case rgbMax == red && !rCloseToG && !rCloseToB:
 		colorToReturn = "red"
+		// fmt.Println("chose color red")
 	// green is dominant
-	case lastColorUsed != "green" && rgbMax == green && !rCloseToG && !gCloseToB:
+	case rgbMax == green && !rCloseToG && !gCloseToB:
 		colorToReturn = "green"
+		// fmt.Println("chose color green")
 	// blue is dominant
-	case lastColorUsed != "blue" && rgbMax == blue && !gCloseToB && !rCloseToB:
+	case rgbMax == blue && !gCloseToB && !rCloseToB:
 		colorToReturn = "blue"
+		// fmt.Println("chose color blue")
+	default:
+		// fmt.Println("switch chose default")//DEBUG LINE
 	}
-
-	// colorStrength := color.GrayModel.Convert(decodedImage.At(x, y)).(color.Gray)
-	// // colorStrength := rgbMin
-	// level := int(colorStrength.Y) / valPerLevel
-	// // level := int(colorStrength) / valPerLevel
 
 	return colorToReturn
 }
@@ -60,8 +75,30 @@ func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorClo
 // 	return uint32(r) | uint32(g)<<8 | uint32(b)<<16 | uint32(a)<<24
 // }
 
-func decideIntensity() int {
+func DecideIntensityWithGrayscale(perLevelThreshold, maxIntensity int) int {
 	return 1
+}
+func DecideIntensityWithColor(red, green, blue, alpha uint8, perLevelThreshold, maxIntensity int) int {
+	// perLevelThreshold is out of 255
+	// brightness = (red + green + blue) / 3
+	// brightness := math.Sqrt(float64(int(red) + int(green) + int(blue)))
+	brightness := math.Sqrt(float64(0.299*math.Pow(float64(red), 2) + 0.587*math.Pow(float64(green), 2) + 0.114*math.Pow(float64(blue), 2)))
+	// ^ will return a value between 0 and 255
+	returnIntensity := int(int(brightness) / perLevelThreshold)
+	// fmt.Println("brightness:", brightness) //DEBUG LINE
+	// return 1
+	if returnIntensity > maxIntensity {
+		returnIntensity = maxIntensity
+	}
+	// fmt.Println("returnIntensity:", returnIntensity) //DEBUG LINE
+	return returnIntensity
+}
+
+func distanceFrom(a, b uint8) int {
+	if a > b {
+		return int(a - b)
+	}
+	return int(b - a)
 }
 
 func withinRangeOf(a, b uint8, distance int) bool {

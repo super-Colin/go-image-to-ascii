@@ -10,39 +10,48 @@ import (
 	"log"
 	"os"
 	"pickcolor"
-	// "pickcolor/pickcolor"
 )
 
 func main() {
-	debugSwitch := false
+
+	useColor := false
+	useColor = true
+	colorDistanceRequirement := 80
+	colorCloseToRequirement := 60
 
 	ansiOrHtml := "ansi"
 	// ansiOrHtml := "html"
-	colorDistance := 60
+
+	var maxPixelWidth int = 120
 	doubleWide := true
-	var maxPixelWidth int = 60
+	doubleWide = false
 
 	// levels := []string{"_", "a", "b", "c", "d", "e", "f"}
+	// levels := []string{" ", "-", "+", "#", "%", "&"}
+	// levels := []string{" ", "-", "+", "#"}
 	levels := []string{" ", "░", "▒", "▓", "█"}
 	// levels := []string{"▁", "░", "▒", "▓", "█"}
 	// levels := []string{" ", ".", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "▉", "█"}
 
 	if doubleWide {
-		maxPixelWidth /= 2
+		maxPixelWidth /= 2 //half the width of pixels actually scanned
 	}
+	// if maxPixelWidth < 2 {
+	// 	maxPixelWidth = 2
+	// }
 
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
+	// ~~~ image to use
+	imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
-	imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer imagePointer.Close()
 
-	// decodedImage, fileType, err := image.Decode(imagePointer)
 	decodedImage, _, err := image.Decode(imagePointer)
 	if err != nil {
 		log.Fatal(err)
@@ -52,7 +61,6 @@ func main() {
 	ansiColorReset := "\033[0m"
 
 	ansiColorRed := "\033[31m"
-	// ansiColorBrightRed := "\033[91m"
 	ansiColorGreen := "\033[32m"
 	ansiColorYellow := "\033[33m"
 	ansiColorBlue := "\033[34m"
@@ -62,8 +70,7 @@ func main() {
 	ansiColorBlack := "\033[30m"
 
 	// html color codes:
-	// htmlColorReset := "<span style=\"color: #000000;\">"
-	htmlColorReset := "</span>"
+	htmlColorEnd := "</span>"
 	htmlColorRed := "</span><span style=\"color: #ff0000;\">"
 	htmlColorGreen := "</span><span style=\"color: #00ff00;\">"
 	htmlColorYellow := "</span><span style=\"color: #ffff00;\">"
@@ -73,78 +80,89 @@ func main() {
 	htmlColorWhite := "</span><span style=\"color: #ffffff;\">"
 	htmlColorBlack := "</span><span style=\"color: #000000;\">"
 
-	var valPerLevel int = 255 / len(levels)
-	maxLevel := len(levels) - 1
+	var valPerIntensityLevel int = 255 / len(levels)
+	maxIntensity, currentIntensity := len(levels)-1, 0
 	scaleDownBy := decodedImage.Bounds().Max.X / maxPixelWidth
+
+	htmlColorCode, ansiColorCode := "", ""
 	lastColorUsed := ""
 	for y := decodedImage.Bounds().Min.Y; y < decodedImage.Bounds().Max.Y; y += scaleDownBy {
-		// iterate through all X's first at each Y for printing
+		// iterate through all X's first at each Y for printing format
 		for x := decodedImage.Bounds().Min.X; x < decodedImage.Bounds().Max.X; x += scaleDownBy {
 
-			// decide what color to use
-			red := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).R
-			green := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).G
-			blue := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).B
-			alpha := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).A
+			// PICK INTENSITY
+			grayScaleIntensity := color.GrayModel.Convert(decodedImage.At(x, y)).(color.Gray)
+			// fmt.Println("grayScaleIntensity:", grayScaleIntensity)//DEBUG LINE
 
-			colorStrength := color.GrayModel.Convert(decodedImage.At(x, y)).(color.Gray)
-			// colorStrength := rgbMin
-			level := int(colorStrength.Y) / valPerLevel
-			// level := int(colorStrength) / valPerLevel
+			if !useColor {
+				// currentIntensity = pickcolor.DecideIntensityWithGray(grayScaleIntensity, valPerIntensityLevel,maxIntensity)
+				currentIntensity = int(grayScaleIntensity.Y) / valPerIntensityLevel
+				// fmt.Println("currentIntensity:", currentIntensity)
+			}
+			if useColor {
+				// decide what color to use
+				pRed := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).R
+				pGreen := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).G
+				pBlue := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).B
+				pAlpha := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).A
 
-			colorToUse := pickcolor.PickColor(red, green, blue, alpha, colorDistance, colorDistance, lastColorUsed)
-			htmlColorCode := ""
-			ansiColorCode := ""
-			// fmt.Println(colorToUse)
-			// set color code variables
-			switch {
-			case colorToUse == "black":
-				ansiColorCode = ansiColorBlack
-				htmlColorCode = htmlColorBlack
-			case colorToUse == "white":
-				ansiColorCode = ansiColorWhite
-				htmlColorCode = htmlColorWhite
-			case colorToUse == "purple":
-				ansiColorCode = ansiColorPurple
-				htmlColorCode = htmlColorPurple
-			case colorToUse == "yellow":
-				ansiColorCode = ansiColorYellow
-				htmlColorCode = htmlColorYellow
-			case colorToUse == "cyan":
-				ansiColorCode = ansiColorCyan
-				htmlColorCode = htmlColorCyan
-			case colorToUse == "red":
-				ansiColorCode = ansiColorRed
-				htmlColorCode = htmlColorRed
-			case colorToUse == "green":
-				ansiColorCode = ansiColorGreen
-				htmlColorCode = htmlColorGreen
-			case colorToUse == "blue":
-				ansiColorCode = ansiColorBlue
-				htmlColorCode = htmlColorBlue
-			}
-			// set the color of the pixel
-			if ansiOrHtml == "ansi" {
-				fmt.Print(ansiColorCode)
-			} else if ansiOrHtml == "html" {
-				fmt.Print(htmlColorCode)
-			}
-			lastColorUsed = colorToUse
+				currentIntensity = pickcolor.DecideIntensityWithColor(pRed, pGreen, pBlue, pAlpha, valPerIntensityLevel, maxIntensity)
+				// fmt.Println("currentIntensity was set to:", currentIntensity) //DEBUG LINE
+				// ~~~ PICK COLOR ~~~
+				colorToUse := pickcolor.PickColor(pRed, pGreen, pBlue, pAlpha, colorDistanceRequirement, colorCloseToRequirement)
+				// fmt.Println("picked color:", colorToUse)//DEBUG LINE
+				// set color code variables
+				switch {
+				case colorToUse == "black" && lastColorUsed != "black":
+					ansiColorCode = ansiColorBlack
+					htmlColorCode = htmlColorBlack
+				case colorToUse == "white" && lastColorUsed != "white":
+					ansiColorCode = ansiColorWhite
+					htmlColorCode = htmlColorWhite
+				case colorToUse == "purple" && lastColorUsed != "purple":
+					ansiColorCode = ansiColorPurple
+					htmlColorCode = htmlColorPurple
+				case colorToUse == "yellow" && lastColorUsed != "yellow":
+					ansiColorCode = ansiColorYellow
+					htmlColorCode = htmlColorYellow
+				case colorToUse == "cyan" && lastColorUsed != "cyan":
+					ansiColorCode = ansiColorCyan
+					htmlColorCode = htmlColorCyan
+				case colorToUse == "red" && lastColorUsed != "red":
+					ansiColorCode = ansiColorRed
+					htmlColorCode = htmlColorRed
+				case colorToUse == "green" && lastColorUsed != "green":
+					ansiColorCode = ansiColorGreen
+					htmlColorCode = htmlColorGreen
+				case colorToUse == "blue" && lastColorUsed != "blue":
+					ansiColorCode = ansiColorBlue
+					htmlColorCode = htmlColorBlue
+				default:
+					ansiColorCode = ""
+					htmlColorCode = ""
+				}
 
-			if debugSwitch {
-				fmt.Println(ansiColorWhite, "Max, Min // R G B ", "//", ansiColorRed, red, ansiColorGreen, green, ansiColorBlue, blue)
-				fmt.Println("Chose Color: ", lastColorUsed)
-				fmt.Println("")
+				// set the color of the pixel
+				if ansiOrHtml == "ansi" {
+					fmt.Print(ansiColorCode)
+				} else if ansiOrHtml == "html" {
+					fmt.Print(htmlColorCode)
+				}
+				lastColorUsed = colorToUse
+
+			} // END use color if statement
+
+			// correct intensity if needed
+			if currentIntensity > maxIntensity {
+				currentIntensity = maxIntensity
+				// fmt.Println("fixed intensity:", currentIntensity) //DEBUG LINE
 			}
 
-			// decide how bold the ascii "pixel" should be
-			if level > maxLevel {
-				level = maxLevel
-			}
 			// PRINT THE PIXEL
-			fmt.Print(levels[level])
-			if doubleWide { // print an extra time if dobule wide
-				fmt.Print(levels[level])
+			// fmt.Println("about to use intensity:", currentIntensity) //DEBUG LINE
+			fmt.Print(levels[currentIntensity])
+			if doubleWide {
+				fmt.Print(levels[currentIntensity]) // print an extra time if dobule wide
 			}
 		}
 
@@ -155,34 +173,11 @@ func main() {
 			fmt.Print("<br />")
 		}
 	}
-	// reset the color
+	// reset the color when done
 	if ansiOrHtml == "ansi" {
 		fmt.Print(ansiColorReset)
 	} else if ansiOrHtml == "html" {
-		fmt.Print(htmlColorReset)
+		fmt.Print(htmlColorEnd)
 	}
 
 }
-
-// func withinRangeOf(a, b uint8, distance int) bool {
-// 	intA, intB := int(a), int(b)
-// 	return intA > intB-distance && intA < intB+distance
-// }
-// func minUint8(values ...uint8) uint8 {
-// 	min := uint8(255)
-// 	for _, v := range values {
-// 		if v < min {
-// 			min = v
-// 		}
-// 	}
-// 	return min
-// }
-// func maxUint8(values ...uint8) uint8 {
-// 	max := uint8(0)
-// 	for _, v := range values {
-// 		if v > max {
-// 			max = v
-// 		}
-// 	}
-// 	return max
-// }
