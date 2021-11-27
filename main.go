@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"pickcolor"
+	// "htmlcreator"
 )
 
 func main() {
@@ -22,9 +23,9 @@ func main() {
 	ansiOrHtml := "ansi"
 	// ansiOrHtml := "html"
 
-	var maxPixelWidth int = 120
+	var maxPixelWidth int = 80
 	doubleWide := true
-	doubleWide = false
+	// doubleWide = false
 
 	// levels := []string{"_", "a", "b", "c", "d", "e", "f"}
 	// levels := []string{" ", "-", "+", "#", "%", "&"}
@@ -41,12 +42,13 @@ func main() {
 	// }
 
 	// ~~~ image to use
-	imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\colorSquares.png")
 	if err != nil {
 		log.Fatal(err)
 	}
