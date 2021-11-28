@@ -2,6 +2,7 @@ package htmlcreator
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -19,16 +20,16 @@ func WrapWithBoilerplateHTML(htmlBodyToWrap string, pageTitle string) string {
 `
 }
 
-func WriteToHtmlFile(fileName string, htmlBodyToWrite string, pageTitle string) {
+func WriteToHtmlFile(htmlBodyToWrite string, pageTitle string, fileName string) {
 	// set a name for the file
 	fName := ""
 	if fileName == "" {
-		fName = "index.html"
+		fName = "index"
 	}
 	// create / open the file
-	file, err := os.Create("./htmlCreatorOutput/" + fName + ".html")
+	file, err := os.Create("./htmlCreatorOutput-" + fName + ".html")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer file.Close()
 

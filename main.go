@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"htmlcreator"
 	"image"
 	"image/color"
 	_ "image/gif"
@@ -10,7 +11,6 @@ import (
 	"log"
 	"os"
 	"pickcolor"
-	// "htmlcreator"
 )
 
 func main() {
@@ -23,11 +23,11 @@ func main() {
 	colorCloseToRequirement := 60  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
 
 	ansiOrHtml := "ansi" // "ansi" || "html"; color coding for terminals etc. or html span tags for webpages
-	// ansiOrHtml := "html"
+	ansiOrHtml = "html"
 
-	var maxPixelWidth int = 50
+	var maxPixelWidth int = 1000
 
-	doubleWide := true // Each pixel on the x-axis is printed twice, useful for monospace fonts
+	doubleWide := true // Useful for monospace fonts, each pixel on the x-axis is printed twice
 	// doubleWide = false
 
 	// Double wide respects the maxPixelWidth setting
@@ -43,11 +43,12 @@ func main() {
 
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
-	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ODDicon.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\sc-diamond-noTxt.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\colorSquares.png")
 	if err != nil {
 		log.Fatal(err)
@@ -95,8 +96,7 @@ func main() {
 	// }
 
 	// ~~~~~ DECLARE GLOBALS FOR THE LOOP ~~~~~
-	htmlColorCode, ansiColorCode := "", ""
-	lastColorUsed := ""
+	mainOutput, htmlColorCode, ansiColorCode, lastColorUsed := "", "", "", ""
 
 	// ~~~~~ START THE LOOP! ~~~~~
 	for y := decodedImage.Bounds().Min.Y; y < decodedImage.Bounds().Max.Y; y += scaleDownBy {
@@ -112,7 +112,8 @@ func main() {
 				currentIntensity = int(grayScaleIntensity.Y) / valPerIntensityLevel
 				// fmt.Println("currentIntensity:", currentIntensity)
 			}
-			if useColor {
+
+			if useColor { // ~~~~~ START USE COLOR IF STATEMENT ~~~~~
 				// decide what color to use
 				pRed := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).R
 				pGreen := color.RGBAModel.Convert(decodedImage.At(x, y)).(color.RGBA).G
@@ -152,16 +153,18 @@ func main() {
 				case colorToUse == "blue" && lastColorUsed != "blue":
 					ansiColorCode = ansiColorBlue
 					htmlColorCode = htmlColorBlue
-				default:
+				default: // will get used if colorToUse == lastColorUsed, so print nothing
 					ansiColorCode = ""
 					htmlColorCode = ""
 				}
 
 				// ~~~~~ SET THE COLOR OF THE PIXEL ~~~~~
 				if ansiOrHtml == "ansi" {
-					fmt.Print(ansiColorCode)
+					// fmt.Print(ansiColorCode)
+					mainOutput += ansiColorCode
 				} else if ansiOrHtml == "html" {
-					fmt.Print(htmlColorCode)
+					// fmt.Print(htmlColorCode)
+					mainOutput += htmlColorCode
 				}
 				lastColorUsed = colorToUse
 
@@ -175,24 +178,36 @@ func main() {
 
 			// ~~~~~ PRINT THE PIXEL ~~~~~
 			// fmt.Println("about to use intensity:", currentIntensity) //DEBUG LINE
-			fmt.Print(intensityLevels[currentIntensity])
-			if doubleWide {
-				fmt.Print(intensityLevels[currentIntensity]) // print an extra time if dobule wide
+			mainOutput += intensityLevels[currentIntensity]
+			if doubleWide { // print an extra time if dobule wide
+				mainOutput += intensityLevels[currentIntensity]
 			}
 		}
 
 		// ~~~~~ PRINT A NEW LINE AFTER EACH ROW ~~~~~
 		if ansiOrHtml == "ansi" {
-			fmt.Print("\n")
+			// fmt.Print("\n")
+			mainOutput += "\n"
 		} else if ansiOrHtml == "html" {
-			fmt.Print("<br />")
+			// fmt.Print("<br />")
+			mainOutput += "<br />"
 		}
 	}
+
 	// ~~~~~ RESET COLOR WHEN THE LOOP IS DONE ~~~~~
 	if ansiOrHtml == "ansi" {
-		fmt.Print(ansiColorReset)
+		// fmt.Print(ansiColorReset)
+		mainOutput += ansiColorReset
 	} else if ansiOrHtml == "html" {
-		fmt.Print(htmlColorEnd)
+		// fmt.Print(htmlColorEnd)
+		mainOutput += htmlColorEnd
+	}
+
+	// ~~~~~ HANDLE THE OUTPUT ~~~~~
+	if ansiOrHtml == "ansi" {
+		fmt.Print(mainOutput)
+	} else if ansiOrHtml == "html" {
+		htmlcreator.WriteToHtmlFile(mainOutput, "go img-to-ascii output!!!", "")
 	}
 
 }
