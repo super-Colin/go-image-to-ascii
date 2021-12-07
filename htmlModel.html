@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>imgPixels</title>
+<style>
+    body{
+        --pixel-width: 12px; /* width of a sqaure pixel in the image */
+    }
+    .pI_r{ /* .pixelImg_row */
+        display: flex;
+        align-items: center;
+    }
+    .pI_r > *{ /* .pixelImg_row */
+        display: block;
+        min-width: var(--pixel-width);
+        height: var(--pixel-width);
+    }
+    /* something like this to extend pixels, would like to make these programatically and only for the widths that get used */
+    #w2{width: calc(2 * var(--pixel-width));}
+    #w3{width: calc(3 * var(--pixel-width));}
+    #w4{width: calc(4 * var(--pixel-width));}
+    #w5{width: calc(5 * var(--pixel-width));}
+    #w6{width: calc(6 * var(--pixel-width));}
+    #w7{width: calc(7 * var(--pixel-width));}
+    #w8{width: calc(8 * var(--pixel-width));}
+    #w9{width: calc(9 * var(--pixel-width));}
+    #wa{width: calc(10 * var(--pixel-width));}
+    #wb{width: calc(11 * var(--pixel-width));}
+    #wc{width: calc(12 * var(--pixel-width));}
+    #wd{width: calc(13 * var(--pixel-width));}
+    #we{width: calc(14 * var(--pixel-width));}
+    #wf{width: calc(15 * var(--pixel-width));}
+    /* ........ */
+    #wx{width: calc(33 * var(--pixel-width));}
+    #wy{width: calc(34 * var(--pixel-width));}
+    #wz{width: calc(35 * var(--pixel-width));}
+
+    /* Color map of custom elements, avoiding all established 1 letter element tags: https://www.javatpoint.com/html-tags */
+    r{background-color:#f00;}
+    n{background-color:#0f0;}
+    l{background-color:#00f;}
+    y{background-color:#ff0;}
+    c{background-color:#0ff;}
+    m{background-color:#f0f;}
+    k{background-color:#000;}
+    w{background-color:#fff;}
+    /* Contemplated 2 letter tags but that results in ~30% more text (filesize!) overall */
+</style>
+</head>
+
+<body>
+    <div class="pixelImg_container">
+        <span class="pI_r">
+            <k></k>
+            <k></k>
+            <w></w>
+            <k></k>
+            <n></n>
+            <n></n>
+            <c id="wa"></c>
+            <c></c>
+            <r></r>
+            <c></c>
+            <y></y>
+        </span>
+        <span class="pI_r">
+            <k></k>
+            <k></k>
+            <c></c>
+            <c id="wf"></c>
+            <n></n>
+            <r></r>
+            <n></n>
+            <n></n>
+            <n id="wf"></n>
+            <c></c>
+            <m id="wf"></m>
+            <c></c>
+            <w></w>
+            <y></y>
+        </span>
+        <span class="pI_r">
+            <k></k>
+            <c id="w4"></c>
+            <n></n>
+            <r id="wf"></r>
+            <n></n>
+            <n></n>
+            <n></n>
+            <c></c>
+            <k id="w7"></k>
+            <c></c>
+            <m id="w3"></m>
+            <c></c>
+            <w></w>
+            <y></y>
+        </span>
+    </div>
+</body>
+</html>
