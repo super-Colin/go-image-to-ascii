@@ -37,6 +37,7 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 		} else { //if we're at a new color add the last pixel with it's width
 			elemLetter := colorToShortElemLetter(lastColorUsed)
 			pixelToAdd := "<" + elemLetter + ">" + "</" + elemLetter + ">"
+			// pixelToAdd := fmt.Sprintf("<%v>%v</%v", elemLetter, yCoord, elemLetter)
 			if pixelWidth > 1 { // if its wide add a class(..id) to lengthen it
 				pixelToAdd = "<" + elemLetter + " id=\"w" + fmt.Sprintf("%d", pixelWidth) + "\"></" + elemLetter + ">"
 			}
@@ -47,8 +48,9 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 			pixelWidth = 1             //reset pixel width
 			lastColorUsed = colorToUse // reset color
 		}
-		rowOutput += "</span>"
+
 	}
+	rowOutput += "</span>"
 	theRow := processedRow{
 		rowHtml:        rowOutput,
 		rowNumber:      yCoord,
@@ -62,7 +64,7 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 // THESE ARE ALL MAPPED TO CSS FOR COLORS
 func colorToShortElemLetter(color string) string {
 	theLetter := ""
-	fmt.Println("check elem to use for color: ", color)
+	// fmt.Println("check elem to use for color: ", color)
 	switch {
 	case color == "black":
 		theLetter = "k" // <k></k>

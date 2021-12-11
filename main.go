@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"htmlcreator"
 	"image"
 	_ "image/gif"
@@ -8,6 +9,7 @@ import (
 	_ "image/png"
 	"log"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -17,16 +19,17 @@ func main() {
 	colorDistanceRequirement := 80 // 0-255; Distance between colors for them to be distinct
 	colorCloseToRequirement := 60  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
 
-	maxPixelWidth := 6
+	maxPixelWidth := 50
 
 	// ~~~~~ GET IMAGE ~~~~~
 
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\triangle.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
-	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ODDicon.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\sc-diamond-noTxt.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\colorSquares.png")
@@ -92,13 +95,22 @@ func FanInProcessedRows(chans ...<-chan processedRow) <-chan processedRow {
 }
 
 func reorderRows(processedRows []processedRow) string {
-	theMap := make(map[int]processedRow)
+	// theMap := make(map[int]processedRow)
+	var theSlice []processedRow
 	var mainOutput string
 	for _, theRow := range processedRows {
-		theMap[theRow.rowNumber] = theRow
+		// theMap[theRow.rowNumber] = theRow
+		theSlice = append(theSlice, theRow)
 	}
-	for _, theRow := range theMap {
+	// fmt.Println("about to output this map:", theMap)
+	// for _, theRow := range theMap {
+	sort.Slice(theSlice, func(x, n int) bool { return theSlice[x].rowNumber < theSlice[n].rowNumber })
+	// fmt.Println(theSlice)
+	for _, theRow := range theSlice {
+
+		fmt.Println("about to output this row from the map:", theRow)
 		mainOutput += theRow.rowHtml
 	}
+
 	return mainOutput
 }
