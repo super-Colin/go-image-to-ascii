@@ -1,6 +1,7 @@
 package main
 
 import (
+	"htmlcreator"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -16,27 +17,16 @@ func main() {
 	colorDistanceRequirement := 80 // 0-255; Distance between colors for them to be distinct
 	colorCloseToRequirement := 60  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
 
-	maxPixelWidth := 100
-
-	doubleWide := true // Useful for monospace fonts, each pixel on the x-axis is printed twice
-	// doubleWide = false
-
-	// Double wide respects the maxPixelWidth setting
-	if doubleWide {
-		maxPixelWidth /= 2 //half the width of pixels actually desired since we will print them all twice
-	}
-
-	// ~~~~~ GET ASCII REPRESENTATION OF PIXEL INTENSITY ~~~~~
-	// intensityLevels := getIntensityLevelsSlice(0)
+	maxPixelWidth := 6
 
 	// ~~~~~ GET IMAGE ~~~~~
 
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
-	imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ODDicon.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\sc-diamond-noTxt.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\colorSquares.png")
@@ -53,63 +43,62 @@ func main() {
 	scaleDownBy := decodedImage.Bounds().Max.X / maxPixelWidth
 
 	// ~~~~~ DECLARE GLOBALS FOR THE LOOP ~~~~~
-	var workerChannels []<-chan string
+	var rowWorkerChannels []<-chan processedRow
 	var rowsTotal int = 0
 
 	// ~~~~~ START THE LOOP! ~~~~~
-	// For each row we'll create a worker and pool all the returned channels together
+	// FOR EACH ROW START A WORKER AND ADD THE CHANNEL TO POOL
 	for y := decodedImage.Bounds().Min.Y; y < decodedImage.Bounds().Max.Y; y += scaleDownBy {
-		workerChannels = append(workerChannels, rowWorker(decodedImage, y, scaleDownBy, colorDistanceRequirement, colorCloseToRequirement))
+		rowWorkerChannels = append(rowWorkerChannels, rowWorker(decodedImage, y, scaleDownBy, colorDistanceRequirement, colorCloseToRequirement))
 		rowsTotal++
 	}
 
 	// ~~~~~ COMBINE THE WORKER CHANNELS ~~~~~
-	// workerOutputChannel := fanInStringChannels(workerChannels...)
-	// theVal := ""
-	// for i := 0; i < rowsTotal; i++ {
-	// 	theVal = <-workerOutputChannel //blocks
-	// }
+	workerOutputChannel := FanInProcessedRows(rowWorkerChannels...)
 
-	// ~~~~~  ~~~~~
+	// ~~~~~ RECIEVE THE PROCESSED ROWS  ~~~~~
+	var finishedRows []processedRow
+	for i := 0; i < rowsTotal; i++ { // this loop will block until it has recieved all rows back
+		theProcessedRow := <-workerOutputChannel //blocks to listen
+		finishedRows = append(finishedRows, theProcessedRow)
+	}
+	// ~~~~~ PUT THEM BACK IN ORDER ~~~~~
 
+	theOut := reorderRows(finishedRows)
+
+	// ~~~~~ HANDLE REASSEMBLED OUTPUT ~~~~~
+
+	htmlcreator.WriteToHtmlFile(theOut, "go img-to-ascii output!!!", "")
 }
 
 // Returns a channel that the rowProcessor will return it's value through
-func rowWorker(imagePointer image.Image, Ycoord, scaleBy, colorDistanceRequirement, colorCloseToRequirement int) <-chan string {
-	c := make(chan string)
+func rowWorker(imagePointer image.Image, Ycoord, scaleBy, colorDistanceRequirement, colorCloseToRequirement int) <-chan processedRow {
+	c := make(chan processedRow)
 	go rowProcessor(c, imagePointer, Ycoord, scaleBy, colorDistanceRequirement, colorCloseToRequirement)
 	return c
 }
 
-func fanInStringChannels(channelsIn ...<-chan string) <-chan string {
-	channelOut := make(chan string)
-	for _, channelIn := range channelsIn {
-		go func() {
-			channelOut <- <-channelIn
-		}()
+// Will take an amount of channels, listen to them all and return all results through a single out channel
+func FanInProcessedRows(chans ...<-chan processedRow) <-chan processedRow {
+	newOutChannel := make(chan processedRow)
+	for _, channelIn := range chans {
+		go func(cOut chan processedRow, cIn <-chan processedRow) {
+			for val := range cIn {
+				cOut <- val
+			}
+		}(newOutChannel, channelIn)
 	}
-	return channelOut
+	return newOutChannel
 }
 
-// ~~~~~ THE CHARACTER REPRESENTATIONS OF INCREASING LEVELS OF "BOLDNESS"/"INTENSITY" OF A PIXEL ~~~~~
-// ~~~~~ Grouped together for clarity ~~~~~
-func getIntensityLevelsSlice22(num int) []string {
-	var intensityLevels []string
-	switch {
-	case num == 0:
-		intensityLevels = []string{"░", "▒", "▓", "█"}
-	case num == 1:
-		intensityLevels = []string{" ", "░", "▒", "▓", "█"}
-	case num == 2:
-		intensityLevels = []string{"▁", "░", "▒", "▓", "█"}
-	case num == 3:
-		intensityLevels = []string{" ", "-", "+", "#"}
-	case num == 4:
-		intensityLevels = []string{" ", ".", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "▉", "█"}
-	case num == 5:
-		intensityLevels = []string{"_", "a", "b", "c", "d", "e", "f"}
-	default:
-		intensityLevels = []string{" ", "░", "▒", "▓", "█"}
+func reorderRows(processedRows []processedRow) string {
+	theMap := make(map[int]processedRow)
+	var mainOutput string
+	for _, theRow := range processedRows {
+		theMap[theRow.rowNumber] = theRow
 	}
-	return intensityLevels
+	for _, theRow := range theMap {
+		mainOutput += theRow.rowHtml
+	}
+	return mainOutput
 }
