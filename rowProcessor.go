@@ -10,7 +10,7 @@ import (
 type processedRow struct {
 	rowHtml        string
 	rowNumber      int
-	widthsRequired map[int]struct{} //basically a set
+	widthsRequired *Set //basically a set
 }
 
 func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy, colorDistanceRequirement, colorCloseToRequirement int) {
@@ -19,7 +19,7 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 
 	rowOutput := "<span class=\"pR\">"
 	lastColorUsed := ""
-	widthsRequired := make(map[int]struct{})
+	widthsRequired := NewSet()
 	var pixelWidth int = 1 // 1x1 square
 	// ~~~~~ START A LOOP THROUGH THE ROW ~~~~~
 	for ; x < maxX; x += scaleBy {
@@ -44,7 +44,8 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 
 			rowOutput += pixelToAdd //add the pixel to the output
 
-			widthsRequired[pixelWidth] = struct{}{}
+			// widthsRequired[pixelWidth] = struct{}{}
+			widthsRequired.Add(pixelWidth)
 			pixelWidth = 1             //reset pixel width
 			lastColorUsed = colorToUse // reset color
 		}
@@ -110,5 +111,14 @@ func getRequiredWidths(finishedRows []processedRow) *Set {
 		theSet.Add(theRow.rowNumber)
 	}
 
+	return theSet
+}
+func getAllRequiredWidths(rows ...processedRow) *Set {
+	theSet := NewSet()
+	for _, row := range rows { //for each row
+		for key := range row.widthsRequired.list { // for each list of widths
+			theSet.Add(key)
+		}
+	}
 	return theSet
 }

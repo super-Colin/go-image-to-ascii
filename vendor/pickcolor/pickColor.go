@@ -28,42 +28,29 @@ func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorClo
 	switch {
 	// CHECK FOR OVERALL BRIGHTNESS / DARKNESS
 	// no color is very bright
-	case rgbMax < 60:
+	case rgbMax < 40:
 		colorToReturn = "black"
-		// fmt.Println("chose color black")
-
 	// all colors are bright
-	case rgbMin > 220:
+	case rgbMin > 230:
 		colorToReturn = "white"
-		// fmt.Println("chose color white")
-
 	// red and blue are close, green isn't
 	case rgbMin == green && rCloseToB && !rCloseToG:
 		colorToReturn = "purple"
-		// fmt.Println("chose color purple")
-
 	// red and green are close, blue isn't
 	case rgbMin == blue && rCloseToG && !rCloseToB:
 		colorToReturn = "yellow"
-		// fmt.Println("chose color yellow")
-
 	// green and blue are close, red isn't
 	case rgbMin == red && gCloseToB && !rCloseToG:
 		colorToReturn = "cyan"
-		// fmt.Println("chose color cyan")
-
 	// red is dominant
 	case rgbMax == red && !rCloseToG && !rCloseToB:
 		colorToReturn = "red"
-		// fmt.Println("chose color red")
 	// green is dominant
 	case rgbMax == green && !rCloseToG && !gCloseToB:
 		colorToReturn = "green"
-		// fmt.Println("chose color green")
 	// blue is dominant
 	case rgbMax == blue && !gCloseToB && !rCloseToB:
 		colorToReturn = "blue"
-		// fmt.Println("chose color blue")
 	default:
 		// fmt.Println("switch chose default")//DEBUG LINE
 	}

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"htmlcreator"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -16,17 +14,18 @@ func main() {
 
 	// ~~~~~ GLOBAL SETTINGS ~~~~~
 
-	colorDistanceRequirement := 80 // 0-255; Distance between colors for them to be distinct
-	colorCloseToRequirement := 60  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
+	colorDistanceRequirement := 40 // 0-255; Distance between colors for them to be distinct
+	colorCloseToRequirement := 20  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
 
-	maxPixelWidth := 50
+	maxPixelWidth := 400
 
 	// ~~~~~ GET IMAGE ~~~~~
 
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
-	imagePointer, err := os.Open("C:\\zHolderFolder\\triangle.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\triangle.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\Frame16_2.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
@@ -66,12 +65,14 @@ func main() {
 		finishedRows = append(finishedRows, theProcessedRow)
 	}
 	// ~~~~~ PUT THEM BACK IN ORDER ~~~~~
-
+	theWidths := getAllRequiredWidths(finishedRows...)
+	// create css for all the necesarry
+	theCss := generateCssForWidths(theWidths)
 	theOut := reorderRows(finishedRows)
 
 	// ~~~~~ HANDLE REASSEMBLED OUTPUT ~~~~~
 
-	htmlcreator.WriteToHtmlFile(theOut, "go img-to-ascii output!!!", "")
+	WriteToHtmlFile(theOut, "go img-to-ascii output!!!", "", theCss)
 }
 
 // Returns a channel that the rowProcessor will return it's value through
@@ -106,9 +107,10 @@ func reorderRows(processedRows []processedRow) string {
 	// for _, theRow := range theMap {
 	sort.Slice(theSlice, func(x, n int) bool { return theSlice[x].rowNumber < theSlice[n].rowNumber })
 	// fmt.Println(theSlice)
+
 	for _, theRow := range theSlice {
 
-		fmt.Println("about to output this row from the map:", theRow)
+		// fmt.Println("about to output this row from the map:", theRow)
 		mainOutput += theRow.rowHtml
 	}
 
