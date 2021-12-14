@@ -15,23 +15,26 @@ func main() {
 	// ~~~~~ GLOBAL SETTINGS ~~~~~
 
 	colorDistanceRequirement := 40 // 0-255; Distance between colors for them to be distinct
-	colorCloseToRequirement := 20  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
+	colorCloseToRequirement := 80  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
 
-	maxPixelWidth := 400
+	maxPixelWidth := 50
 
 	// ~~~~~ GET IMAGE ~~~~~
 
-	imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\triangle.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\Frame16_2.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\Frame_18.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\ODDicon.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\sc-diamond-noTxt.png")
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\colorSquares.png")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\Dream_TradingCard.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\Prisma\\IMG_20180121_134052_processed.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}

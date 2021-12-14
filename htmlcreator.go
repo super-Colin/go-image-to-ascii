@@ -38,7 +38,7 @@ func WrapWithBoilerplateHTML(htmlBodyToWrap, pageTitle, additionalCss string) st
 <title>` + pageTitle + `</title>
 <style>
 	body{
-			--pixel-width: 8px; /* width of a sqaure pixel in the image */
+			--pixel-width: 2px; /* width of a sqaure pixel in the image */
 	}
 	.pR{ /* .pixelImg_row */
 			display: flex;

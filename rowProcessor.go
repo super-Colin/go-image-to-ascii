@@ -20,7 +20,7 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 	rowOutput := "<span class=\"pR\">"
 	lastColorUsed := ""
 	widthsRequired := NewSet()
-	var pixelWidth int = 1 // 1x1 square
+	var pixelWidth int = 1 // start as 1x1 square vs 2x1, 14x1 etc..
 	// ~~~~~ START A LOOP THROUGH THE ROW ~~~~~
 	for ; x < maxX; x += scaleBy {
 		convertedPixel := color.RGBAModel.Convert(imagePointer.At(x, yCoord)).(color.RGBA)
@@ -37,20 +37,26 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 		} else { //if we're at a new color add the last pixel with it's width
 			elemLetter := colorToShortElemLetter(lastColorUsed)
 			pixelToAdd := "<" + elemLetter + ">" + "</" + elemLetter + ">"
-			// pixelToAdd := fmt.Sprintf("<%v>%v</%v", elemLetter, yCoord, elemLetter)
 			if pixelWidth > 1 { // if its wide add a class(..id) to lengthen it
 				pixelToAdd = "<" + elemLetter + " id=\"w" + fmt.Sprintf("%d", pixelWidth) + "\"></" + elemLetter + ">"
 			}
 
 			rowOutput += pixelToAdd //add the pixel to the output
 
-			// widthsRequired[pixelWidth] = struct{}{}
 			widthsRequired.Add(pixelWidth)
 			pixelWidth = 1             //reset pixel width
 			lastColorUsed = colorToUse // reset color
 		}
 
 	}
+	widthsRequired.Add(pixelWidth)
+	elemLetter := colorToShortElemLetter(lastColorUsed)
+	pixelToAdd := "<" + elemLetter + ">" + "</" + elemLetter + ">"
+	if pixelWidth > 1 { // if its wide add a class(..id) to lengthen it
+		pixelToAdd = "<" + elemLetter + " id=\"w" + fmt.Sprintf("%d", pixelWidth) + "\"></" + elemLetter + ">"
+	}
+
+	rowOutput += pixelToAdd //add the pixel to the output
 	rowOutput += "</span>"
 	theRow := processedRow{
 		rowHtml:        rowOutput,
