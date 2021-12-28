@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -11,30 +12,27 @@ import (
 )
 
 func main() {
+	// ~~~~~ PARSE ARGS ~~~~~
+	var imagePathArg string
+	var maxWidthArg, colorDistanceReqArg, colorCloseToReqArg int
+	flag.StringVar(&imagePathArg, "image", "", "The path to the image you want to process")
+	flag.IntVar(&maxWidthArg, "mw", 0, "The maximum width of the image you want to process")
+	flag.IntVar(&colorDistanceReqArg, "cdr", 40, "0-255; The distance requirement between colors for them to be distinct")
+	flag.IntVar(&colorCloseToReqArg, "cctr", 80, "0-255; The color close to requirement for the image you want to process")
+
+	flag.Parse()
 
 	// ~~~~~ GLOBAL SETTINGS ~~~~~
 
-	colorDistanceRequirement := 40 // 0-255; Distance between colors for them to be distinct
-	colorCloseToRequirement := 80  // 0-255;  Distance ... to be close to each other, for blending to secondary colors
+	colorDistanceRequirement := colorDistanceReqArg // 0-255; Distance between colors for them to be distinct
+	colorCloseToRequirement := colorCloseToReqArg   // 0-255;  Distance ... to be close to each other, for blending to secondary colors
 
-	maxPixelWidth := 50
+	maxPixelWidth := maxWidthArg
 
 	// ~~~~~ GET IMAGE ~~~~~
 
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\cat1.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\windowPainting.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\triangle.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\ColinPicture3.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\Frame16_2.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\color1.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\color2.jpg")
-	imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\Frame_18.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\ODDicon.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\sc-diamond-noTxt.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\colorSquares.png")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\Dream_TradingCard.jpg")
-	// imagePointer, err := os.Open("C:\\zHolderFolder\\Prisma\\IMG_20180121_134052_processed.jpg")
+	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
+	imagePointer, err := os.Open(imagePathArg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,6 +43,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if maxPixelWidth == 0 {
+		maxPixelWidth = decodedImage.Bounds().Max.X / 2
+	}
 	scaleDownBy := decodedImage.Bounds().Max.X / maxPixelWidth
 
 	// ~~~~~ DECLARE GLOBALS FOR THE LOOP ~~~~~
