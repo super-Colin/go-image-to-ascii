@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -12,29 +13,42 @@ import (
 )
 
 func main() {
+
+	// ~~~~~ GLOBAL SETTINGS ~~~~~
+	colorDistanceDefault := 40
+	colorDistanceDescription := fmt.Sprintf("?0-255?=%v; The distance requirement between colors for them to be distinct", colorDistanceDefault)
+	colorCloseToDefault := 80
+	colorCloseToDescription := fmt.Sprintf("?0-255?=%v; The distance requirement between colors for them to be close", colorCloseToDefault)
+
 	// ~~~~~ PARSE ARGS ~~~~~
 	var imagePathArg string
 	var maxWidthArg, colorDistanceReqArg, colorCloseToReqArg int
 	flag.StringVar(&imagePathArg, "image", "", "The path to the image you want to process")
 	flag.IntVar(&maxWidthArg, "mw", 0, "The maximum width of the image you want to process")
-	flag.IntVar(&colorDistanceReqArg, "cdr", 40, "0-255; The distance requirement between colors for them to be distinct")
-	flag.IntVar(&colorCloseToReqArg, "cctr", 80, "0-255; The color close to requirement for the image you want to process")
+	flag.IntVar(&colorDistanceReqArg, "cdr", colorDistanceDefault, colorDistanceDescription)
+	flag.IntVar(&colorCloseToReqArg, "cctr", colorCloseToDefault, colorCloseToDescription)
 
 	flag.Parse()
 
-	// ~~~~~ GLOBAL SETTINGS ~~~~~
-
-	colorDistanceRequirement := colorDistanceReqArg // 0-255; Distance between colors for them to be distinct
-	colorCloseToRequirement := colorCloseToReqArg   // 0-255;  Distance ... to be close to each other, for blending to secondary colors
+	colorDistanceRequirement := colorDistanceReqArg
+	colorCloseToRequirement := colorCloseToReqArg
 
 	maxPixelWidth := maxWidthArg
-
+	// ~~~~~ VALIDATE ARGS ~~~~~
+	if colorDistanceRequirement < 0 || colorDistanceRequirement > 255 {
+		fmt.Println("Color distance requirement must be between 0 and 255, defaulting to ", colorDistanceDefault)
+		colorDistanceRequirement = colorDistanceDefault
+	}
+	if colorCloseToDefault < 0 || colorCloseToDefault > 255 {
+		fmt.Println("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
+		colorCloseToRequirement = colorCloseToDefault
+	}
 	// ~~~~~ GET IMAGE ~~~~~
 
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
 	imagePointer, err := os.Open(imagePathArg)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error opening image", err)
 	}
 	defer imagePointer.Close() //defer to close the file when program is done
 
