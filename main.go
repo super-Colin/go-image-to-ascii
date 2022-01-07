@@ -15,18 +15,25 @@ import (
 func main() {
 
 	// ~~~~~ GLOBAL SETTINGS ~~~~~
+	colorDistanceFlag := "cdr"
 	colorDistanceDefault := 40
 	colorDistanceDescription := fmt.Sprintf("?0-255?=%v; The distance requirement between colors for them to be distinct", colorDistanceDefault)
+	colorDistanceMin := 0
+	colorDistanceMax := 255
+
+	colorCloseToFlag := "cctr"
 	colorCloseToDefault := 80
 	colorCloseToDescription := fmt.Sprintf("?0-255?=%v; The distance requirement between colors for them to be close", colorCloseToDefault)
+	colorCloseToMin := 0
+	colorCloseToMax := 255
 
 	// ~~~~~ PARSE ARGS ~~~~~
 	var imagePathArg string
 	var maxWidthArg, colorDistanceReqArg, colorCloseToReqArg int
 	flag.StringVar(&imagePathArg, "image", "", "The path to the image you want to process")
 	flag.IntVar(&maxWidthArg, "mw", 0, "The maximum width of the image you want to process")
-	flag.IntVar(&colorDistanceReqArg, "cdr", colorDistanceDefault, colorDistanceDescription)
-	flag.IntVar(&colorCloseToReqArg, "cctr", colorCloseToDefault, colorCloseToDescription)
+	flag.IntVar(&colorDistanceReqArg, colorDistanceFlag, colorDistanceDefault, colorDistanceDescription)
+	flag.IntVar(&colorCloseToReqArg, colorCloseToFlag, colorCloseToDefault, colorCloseToDescription)
 
 	flag.Parse()
 
@@ -35,11 +42,11 @@ func main() {
 
 	maxPixelWidth := maxWidthArg
 	// ~~~~~ VALIDATE ARGS ~~~~~
-	if colorDistanceRequirement < 0 || colorDistanceRequirement > 255 {
+	if colorDistanceRequirement < colorDistanceMin || colorDistanceRequirement > colorDistanceMax {
 		fmt.Println("Color distance requirement must be between 0 and 255, defaulting to ", colorDistanceDefault)
 		colorDistanceRequirement = colorDistanceDefault
 	}
-	if colorCloseToDefault < 0 || colorCloseToDefault > 255 {
+	if colorCloseToDefault < colorCloseToMin || colorCloseToDefault > colorCloseToMax {
 		fmt.Println("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
 		colorCloseToRequirement = colorCloseToDefault
 	}
