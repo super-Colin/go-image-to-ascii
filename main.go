@@ -15,41 +15,44 @@ import (
 func main() {
 
 	// ~~~~~ GLOBAL SETTINGS ~~~~~
+	var colorDistanceReqArg int
 	colorDistanceFlag := "cdr"
 	colorDistanceDefault := 40
-	colorDistanceDescription := fmt.Sprintf("?0-255?=%v; The distance requirement between colors for them to be distinct", colorDistanceDefault)
+	colorDistanceDescription := "The distance requirement between colors for them to be distinct"
 	colorDistanceMin := 0
 	colorDistanceMax := 255
+	flag.IntVar(&colorDistanceReqArg, colorDistanceFlag, colorDistanceDefault, colorDistanceDescription)
+	if colorDistanceReqArg < colorDistanceMin || colorDistanceReqArg > colorDistanceMax {
+		fmt.Println("Color distance requirement must be between 0 and 255, defaulting to ", colorDistanceDefault)
+		colorDistanceReqArg = colorDistanceDefault
+	}
 
+	var colorCloseToReqArg int
 	colorCloseToFlag := "cctr"
 	colorCloseToDefault := 80
-	colorCloseToDescription := fmt.Sprintf("?0-255?=%v; The distance requirement between colors for them to be close", colorCloseToDefault)
+	colorCloseToDescription := "The distance requirement between colors for them to be close"
 	colorCloseToMin := 0
 	colorCloseToMax := 255
+	flag.IntVar(&colorCloseToReqArg, colorCloseToFlag, colorCloseToDefault, colorCloseToDescription)
+	if colorCloseToReqArg < colorCloseToMin || colorCloseToReqArg > colorCloseToMax {
+		fmt.Println("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
+		colorCloseToReqArg = colorCloseToDefault
+	}
 
 	// ~~~~~ PARSE ARGS ~~~~~
 	var imagePathArg string
-	var maxWidthArg, colorDistanceReqArg, colorCloseToReqArg int
+	var maxWidthArg int
 	flag.StringVar(&imagePathArg, "image", "", "The path to the image you want to process")
 	flag.IntVar(&maxWidthArg, "mw", 0, "The maximum width of the image you want to process")
-	flag.IntVar(&colorDistanceReqArg, colorDistanceFlag, colorDistanceDefault, colorDistanceDescription)
-	flag.IntVar(&colorCloseToReqArg, colorCloseToFlag, colorCloseToDefault, colorCloseToDescription)
 
 	flag.Parse()
 
 	colorDistanceRequirement := colorDistanceReqArg
 	colorCloseToRequirement := colorCloseToReqArg
-
 	maxPixelWidth := maxWidthArg
+
 	// ~~~~~ VALIDATE ARGS ~~~~~
-	if colorDistanceRequirement < colorDistanceMin || colorDistanceRequirement > colorDistanceMax {
-		fmt.Println("Color distance requirement must be between 0 and 255, defaulting to ", colorDistanceDefault)
-		colorDistanceRequirement = colorDistanceDefault
-	}
-	if colorCloseToDefault < colorCloseToMin || colorCloseToDefault > colorCloseToMax {
-		fmt.Println("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
-		colorCloseToRequirement = colorCloseToDefault
-	}
+
 	// ~~~~~ GET IMAGE ~~~~~
 
 	// imagePointer, err := os.Open("C:\\zHolderFolder\\color-wheel.png")
@@ -74,7 +77,7 @@ func main() {
 	var rowsTotal int = 0
 
 	// ~~~~~ START THE LOOP! ~~~~~
-	// FOR EACH ROW START A WORKER AND ADD THE CHANNEL TO POOL
+	// FOR EACH ROW START A WORKER AND ADD THE CHANNEL TO THE POOL
 	for y := decodedImage.Bounds().Min.Y; y < decodedImage.Bounds().Max.Y; y += scaleDownBy {
 		rowWorkerChannels = append(rowWorkerChannels, rowWorker(decodedImage, y, scaleDownBy, colorDistanceRequirement, colorCloseToRequirement))
 		rowsTotal++
@@ -91,12 +94,11 @@ func main() {
 	}
 	// ~~~~~ PUT THEM BACK IN ORDER ~~~~~
 	theWidths := getAllRequiredWidths(finishedRows...)
-	// create css for all the necesarry
+	// create css for all the necessary widths
 	theCss := generateCssForWidths(theWidths)
 	theOut := reorderRows(finishedRows)
 
 	// ~~~~~ HANDLE REASSEMBLED OUTPUT ~~~~~
-
 	WriteToHtmlFile(theOut, "go img-to-ascii output!!!", "", theCss)
 }
 
@@ -134,7 +136,6 @@ func reorderRows(processedRows []processedRow) string {
 	// fmt.Println(theSlice)
 
 	for _, theRow := range theSlice {
-
 		// fmt.Println("about to output this row from the map:", theRow)
 		mainOutput += theRow.rowHtml
 	}
