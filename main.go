@@ -14,36 +14,48 @@ import (
 
 func main() {
 
-	// ~~~~~ GLOBAL SETTINGS ~~~~~
+	// ~~~~~ DEFINE FLAGS ~~~~~
+	var imagePathArg string
+	flag.StringVar(&imagePathArg, "img", "", "The path to the image you want to process")
+
+	var maxWidthArg int
+	flag.IntVar(&maxWidthArg, "mw", 0, "The maximum width of the image you want to process")
+
 	var colorDistanceReqArg int
-	colorDistanceFlag := "cdr"
-	colorDistanceDefault := 40
-	colorDistanceDescription := "The distance requirement between colors for them to be distinct"
-	colorDistanceMin := 0
-	colorDistanceMax := 255
-	flag.IntVar(&colorDistanceReqArg, colorDistanceFlag, colorDistanceDefault, colorDistanceDescription)
-	if colorDistanceReqArg < colorDistanceMin || colorDistanceReqArg > colorDistanceMax {
-		fmt.Println("Color distance requirement must be between 0 and 255, defaulting to ", colorDistanceDefault)
+	var colorCloseToReqArg int = 40
+	var colorDistanceDefault int = 40
+	var colorCloseToDefault int = 80
+	var verboseLogging bool = false
+
+	// var nFlag = flag.Int("n", 1234, "help message for flag n")
+
+	// ~~~~~ REGISTER FLAGS WITH GO ~~~~~
+	flag.IntVar(&colorDistanceReqArg, "cdr", colorDistanceDefault, "The distance requirement between colors for them to be distinct")
+	flag.IntVar(&colorCloseToReqArg, "ccd", colorCloseToDefault, "The distance requirement between colors for them to be close")
+
+	flag.Int()
+	// ~~~~~ Set defaults and register flags ~~~~~
+
+	// colorDistanceReqArg
+
+	if colorDistanceReqArg < 0 || colorDistanceReqArg > 255 {
+		printIfVerbose("Color distance requirement must be between 0 and 255, defaulting to ", colorDistanceDefault)
 		colorDistanceReqArg = colorDistanceDefault
 	}
 
-	var colorCloseToReqArg int
-	colorCloseToFlag := "cctr"
+	// colorCloseToReqArg
 	colorCloseToDefault := 80
-	colorCloseToDescription := "The distance requirement between colors for them to be close"
-	colorCloseToMin := 0
-	colorCloseToMax := 255
-	flag.IntVar(&colorCloseToReqArg, colorCloseToFlag, colorCloseToDefault, colorCloseToDescription)
-	if colorCloseToReqArg < colorCloseToMin || colorCloseToReqArg > colorCloseToMax {
-		fmt.Println("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
+	if colorCloseToReqArg < 0 || colorCloseToReqArg > 255 {
+		printIfVerbose("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
 		colorCloseToReqArg = colorCloseToDefault
 	}
 
 	// ~~~~~ PARSE ARGS ~~~~~
-	var imagePathArg string
-	var maxWidthArg int
-	flag.StringVar(&imagePathArg, "image", "", "The path to the image you want to process")
-	flag.IntVar(&maxWidthArg, "mw", 0, "The maximum width of the image you want to process")
+
+	if colorCloseToReqArg < 0 || colorCloseToReqArg > 255 {
+		printIfVerbose("Color close to requirement  must be between 0 and 255, defaulting to ", colorCloseToDefault)
+		colorCloseToReqArg = colorCloseToDefault
+	}
 
 	flag.Parse()
 
@@ -60,7 +72,7 @@ func main() {
 	if err != nil {
 		log.Fatal("error opening image", err)
 	}
-	defer imagePointer.Close() //defer to close the file when program is done
+	defer imagePointer.Close() // go ahead and defer closing the file for when program is done
 
 	decodedImage, _, err := image.Decode(imagePointer)
 	if err != nil {
@@ -130,15 +142,21 @@ func reorderRows(processedRows []processedRow) string {
 		// theMap[theRow.rowNumber] = theRow
 		theSlice = append(theSlice, theRow)
 	}
-	// fmt.Println("about to output this map:", theMap)
+	// printIfVerbose("about to output this map:", theMap)
 	// for _, theRow := range theMap {
 	sort.Slice(theSlice, func(x, n int) bool { return theSlice[x].rowNumber < theSlice[n].rowNumber })
-	// fmt.Println(theSlice)
+	// printIfVerbose(theSlice)
 
 	for _, theRow := range theSlice {
-		// fmt.Println("about to output this row from the map:", theRow)
+		// printIfVerbose("about to output this row from the map:", theRow)
 		mainOutput += theRow.rowHtml
 	}
 
 	return mainOutput
+}
+
+func printIfVerbose(msg string) {
+	if verboseLogging {
+		fmt.Println(msg)
+	}
 }
