@@ -1,16 +1,16 @@
-package main
+package htmlGen
 
 import (
+	"colormath"
 	"fmt"
 	"image"
 	"image/color"
-	"pickcolor"
 )
 
 type processedRow struct {
 	rowHtml        string
 	rowNumber      int
-	widthsRequired *Set //basically a set
+	widthsRequired map[int]struct{} // Set of ints, int keys with empty vals
 }
 
 func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy, colorDistanceRequirement, colorCloseToRequirement int) {
@@ -30,7 +30,7 @@ func rowProcessor(c chan processedRow, imagePointer image.Image, yCoord, scaleBy
 		pAlpha := convertedPixel.A
 
 		// ~~~~~ PICK COLOR ~~~~~
-		colorToUse := pickcolor.PickColor(pRed, pGreen, pBlue, pAlpha, colorDistanceRequirement, colorCloseToRequirement)
+		colorToUse := colormath.PickColor(pRed, pGreen, pBlue, pAlpha, colorDistanceRequirement, colorCloseToRequirement)
 		//if the same color as last pixel in row, just make this pixel 1 width wider
 		if lastColorUsed == colorToUse {
 			pixelWidth++

@@ -22,13 +22,7 @@ Flags:
 
 
 
-
-
-
-
-
-
-C:/xampp> imgtoahtml ( pathToImage, scaleToMaxWidth(# of "pixels"), nameOfFile )
+scmg ( pathToImage, scaleToMaxWidth(# of "pixels"), nameOfFile )
 
 Since we're outputting html that has to be interpretted by the browser and potentially sent online, size of the output is one of the top considerations.
 

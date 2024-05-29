@@ -1,4 +1,4 @@
-package pickcolor
+package colormath
 
 import (
 	"math"
@@ -6,27 +6,18 @@ import (
 
 // "image/color"
 
-// func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorCloseToRequirement int, lastColorUsed string) string {
 func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorCloseToRequirement int) string {
 	colorToReturn := ""
 
 	rCloseToB := withinRangeOf(red, blue, colorCloseToRequirement)
 	rCloseToG := withinRangeOf(red, green, colorCloseToRequirement)
 	gCloseToB := withinRangeOf(green, blue, colorCloseToRequirement)
-	// rFromB := distanceFrom(red, blue)
-	// rFromG := distanceFrom(red, green)
-	// gFromB := distanceFrom(green, blue)
-	// rIsLargest := red > maxUint8(green, blue)
-	// gIsLargest := green > maxUint8(red, blue)
-	// bIsLargest := blue > maxUint8(red, green)
 
 	rgbMax := maxUint8(red, green, blue)
 	rgbMin := minUint8(red, green, blue)
 
 	// CHECK FOR OVERALL BRIGHTNESS / DARKNESS
-
 	switch {
-	// CHECK FOR OVERALL BRIGHTNESS / DARKNESS
 	// no color is very bright
 	case rgbMax < 40:
 		colorToReturn = "black"
@@ -58,22 +49,13 @@ func PickColor(red, green, blue, alpha uint8, colorDistanceRequirement, colorClo
 	return colorToReturn
 }
 
-// func PickColor(r, g, b, a uint8) uint32 {
-// 	return uint32(r) | uint32(g)<<8 | uint32(b)<<16 | uint32(a)<<24
-// }
-
 func DecideIntensityWithGrayscale(perLevelThreshold, maxIntensity int) int {
 	return 1
 }
 func DecideIntensityWithColor(red, green, blue, alpha uint8, perLevelThreshold, maxIntensity int) int {
-	// perLevelThreshold is out of 255
-	// brightness = (red + green + blue) / 3
-	// brightness := math.Sqrt(float64(int(red) + int(green) + int(blue)))
 	brightness := math.Sqrt(float64(0.299*math.Pow(float64(red), 2) + 0.587*math.Pow(float64(green), 2) + 0.114*math.Pow(float64(blue), 2)))
 	// ^ will return a value between 0 and 255
 	returnIntensity := int(int(brightness) / perLevelThreshold)
-	// fmt.Println("brightness:", brightness) //DEBUG LINE
-	// return 1
 	if returnIntensity > maxIntensity {
 		returnIntensity = maxIntensity
 	}

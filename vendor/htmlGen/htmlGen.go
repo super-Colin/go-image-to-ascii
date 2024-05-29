@@ -1,4 +1,4 @@
-package main
+package htmlGen
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func generateCssForWidths(setOfWidths *Set) string {
+func generateCssForWidths(setOfWidths *map[int]struct{}) string {
 	theWidthsCss := ""
 	for width := range setOfWidths.list {
 		theWidthsCss += fmt.Sprintf("#w%v{width: calc(%v * var(--pixel-width));}", width, width)
